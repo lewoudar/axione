@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "axione"
+version = "0.1.0"
+description = "Rent price comparator by department"
+authors = ["le_woudar <rollandkev@yahoo.fr>"]
+readme = "README.md"
+
+packages = [
+    { include = "axione" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = "^0.92.0"
+uvicorn = "^0.20.0"
+httpx = "^0.23.3"
+parsel = "^1.7.0"
+polars = "^0.16.10"
+
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.2.2"
+pytest-cov = "^4.0.0"
+respx = "^0.20.1"
+
+
+[tool.poetry.group.lint.dependencies]
+ruff = "^0.0.254"
+isort = "^5.12.0"
+black = "^23.1.0"
+bandit = "^1.7.4"
+pre-commit = "^3.1.1"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=axione --cov-report html --cov-report xml"
+trio_mode = true
+
+[tool.isort]
+line_length = 120
+profile = "black"
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
