@@ -7,13 +7,6 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from axione.config import Settings
 
 
-@pytest.fixture(scope='session')
-def parquet_file() -> Path:
-    """Returns Pathlib.Path to parquet file used in tests"""
-    test_dir = Path(__file__).parent
-    return test_dir / 'test_apartments.parquet'
-
-
 @pytest.fixture
 def anyio_backend() -> str:
     """Returns async backend used in tests, in our case it is always asyncio"""
@@ -21,8 +14,10 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(scope='session')
-def settings(parquet_file) -> Settings:
+def settings() -> Settings:
     """Returns settings object used in tests"""
+    test_dir = Path(__file__).parent
+    parquet_file = test_dir / 'test_apartments.parquet'
     return Settings(apartment_data_file=parquet_file)
 
 
@@ -39,7 +34,7 @@ def get_page_content() -> typing.Callable[[str, float], str]:
 
 
 @pytest.fixture()
-def get_dummy_api_data() -> typing.Callable[[dict], dict]:
+def get_dummy_api_data() -> typing.Callable[[dict | None], dict]:
     """Gets dummy city api data"""
 
     def _get_dummy_api_data(payload: dict | None = None) -> dict:

@@ -9,18 +9,18 @@ from axione.scraper import fetch_city_api_data, fetch_city_note, get_filtered_da
 class TestGetFilteredDataFrame:
     """Tests function get_filtered_dataframe"""
 
-    def test_should_return_empty_dataframe_when_department_not_found(self, parquet_file):
+    def test_should_return_empty_dataframe_when_department_not_found(self, settings):
         # test parquet files contains data for departments 64, 75 and 78
-        df = get_filtered_dataframe(parquet_file, 50, 800, '77')
+        df = get_filtered_dataframe(settings.apartment_data_file, 50, 800, '77')
         assert df.is_empty()
 
-    def test_should_return_empty_dataframe_when_criteria_does_not_match_any_row(self, parquet_file):
+    def test_should_return_empty_dataframe_when_criteria_does_not_match_any_row(self, settings):
         # obviously, you will not find 50m2 with 1200 € in Paris :D
-        df = get_filtered_dataframe(parquet_file, 50, 1200, '75')
+        df = get_filtered_dataframe(settings.apartment_data_file, 50, 1200, '75')
         assert df.is_empty()
 
-    def test_should_return_correct_dataframe_given_correct_input(self, parquet_file):
-        df = get_filtered_dataframe(parquet_file, 50, 800, '64')
+    def test_should_return_correct_dataframe_given_correct_input(self, settings):
+        df = get_filtered_dataframe(settings.apartment_data_file, 50, 800, '64')
         assert df.shape == (49, 5)
 
 
@@ -39,18 +39,11 @@ class TestFetchCityApiData:
         assert exc.value.status_code == 503
         assert exc.value.detail == f'Unable to fetch data for city with insee code {insee_code}'
 
-    async def test_should_return_city_object_when_data_is_fetched_correctly(self, respx_mock, settings):
+    async def test_should_return_city_object_when_data_is_fetched_correctly(
+        self, respx_mock, get_dummy_api_data, settings
+    ):
+        payload = get_dummy_api_data({})
         insee_code = '64024'
-        payload = {
-            'nom': 'Anglet',
-            'code': insee_code,
-            'codesPostaux': ['64600'],
-            'siren': '216400242',
-            'codeEpci': '200067106',
-            'codeDepartement': '64',
-            'codeRegion': '75',
-            'population': 39719,
-        }
         respx_mock.get(f'{settings.city_api_url}/{insee_code}') % dict(json=payload)
         async with httpx.AsyncClient() as client:
             city = await fetch_city_api_data(client, insee_code)
