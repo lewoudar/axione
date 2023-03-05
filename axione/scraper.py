@@ -25,7 +25,7 @@ def get_filtered_dataframe(
     )
 
 
-async def fetch_city_data(client: httpx.AsyncClient, insee_code: str) -> RawCity:
+async def fetch_city_api_data(client: httpx.AsyncClient, insee_code: str) -> RawCity:
     settings = get_settings()
     response = await client.get(f'{settings.CITY_API_URL}/{insee_code}')
     if response.status_code >= 400:

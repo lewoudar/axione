@@ -3,7 +3,7 @@ import pytest
 from fastapi.exceptions import HTTPException
 
 from axione.schemas import RawCity
-from axione.scraper import fetch_city_data, fetch_city_note, get_filtered_dataframe
+from axione.scraper import fetch_city_api_data, fetch_city_note, get_filtered_dataframe
 
 
 class TestGetFilteredDataFrame:
@@ -25,8 +25,8 @@ class TestGetFilteredDataFrame:
 
 
 @pytest.mark.anyio
-class TestFetchCityData:
-    """Tests function fetch_city_data"""
+class TestFetchCityApiData:
+    """Tests function fetch_city_api_data"""
 
     async def test_should_raise_503_http_error_when_unable_to_fetch_data(self, respx_mock, settings):
         insee_code = '64065'
@@ -34,7 +34,7 @@ class TestFetchCityData:
 
         with pytest.raises(HTTPException) as exc:
             async with httpx.AsyncClient() as client:
-                await fetch_city_data(client, insee_code)
+                await fetch_city_api_data(client, insee_code)
 
         assert exc.value.status_code == 503
         assert exc.value.detail == f'Unable to fetch data for city with insee code {insee_code}'
@@ -53,7 +53,7 @@ class TestFetchCityData:
         }
         respx_mock.get(f'{settings.CITY_API_URL}/{insee_code}') % dict(json=payload)
         async with httpx.AsyncClient() as client:
-            city = await fetch_city_data(client, insee_code)
+            city = await fetch_city_api_data(client, insee_code)
 
         assert RawCity(**payload) == city
 
