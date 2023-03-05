@@ -3,6 +3,7 @@ import pathlib
 import httpx
 import polars as pl
 from fastapi import HTTPException
+from parsel import Selector
 
 from .config import get_settings
 from .schemas import RawCity
@@ -30,3 +31,16 @@ async def fetch_city_data(client: httpx.AsyncClient, insee_code: str) -> RawCity
     if response.status_code >= 400:
         raise HTTPException(status_code=503, detail=f'Unable to fetch data for city with insee code {insee_code}')
     return RawCity(**response.json())
+
+
+async def fetch_city_note(client: httpx.AsyncClient, city: str, zip_code: str) -> float:
+    settings = get_settings()
+    response = await client.get(f'{settings.WELL_BEING_CITY_URL}/{city.lower()}-{zip_code}/')
+    if response.status_code >= 400:
+        raise HTTPException(
+            status_code=503, detail=f'Unable to fetch global note for city {city} and zip code {zip_code}'
+        )
+
+    selector = Selector(response.text)
+    str_note = selector.css('h3 + div.total::text').get()
+    return float(str_note)
