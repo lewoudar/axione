@@ -27,18 +27,18 @@ def get_filtered_dataframe(
 
 async def fetch_city_api_data(client: httpx.AsyncClient, insee_code: str) -> RawCity:
     settings = get_settings()
-    response = await client.get(f'{settings.CITY_API_URL}/{insee_code}')
+    response = await client.get(f'{settings.city_api_url}/{insee_code}')
     if response.status_code >= 400:
         raise HTTPException(status_code=503, detail=f'Unable to fetch data for city with insee code {insee_code}')
     return RawCity(**response.json())
 
 
-async def fetch_city_note(client: httpx.AsyncClient, city: str, zip_code: str) -> float:
+async def fetch_city_note(client: httpx.AsyncClient, city: str, insee_code: str) -> float:
     settings = get_settings()
-    response = await client.get(f'{settings.WELL_BEING_CITY_URL}/{city.lower()}-{zip_code}/')
+    response = await client.get(f'{settings.well_being_city_url}/{city.lower()}-{insee_code}/')
     if response.status_code >= 400:
         raise HTTPException(
-            status_code=503, detail=f'Unable to fetch global note for city {city} and zip code {zip_code}'
+            status_code=503, detail=f'Unable to fetch global note for city {city} and zip code {insee_code}'
         )
 
     selector = Selector(response.text)

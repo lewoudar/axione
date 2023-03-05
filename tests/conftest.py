@@ -21,9 +21,9 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture(scope='session')
-def settings() -> Settings:
+def settings(parquet_file) -> Settings:
     """Returns settings object used in tests"""
-    return Settings()
+    return Settings(apartment_data_file=parquet_file)
 
 
 @pytest.fixture()
@@ -36,3 +36,24 @@ def get_page_content() -> typing.Callable[[str, float], str]:
         return template.render(city=city, note=note)
 
     yield _get_page_content
+
+
+@pytest.fixture()
+def get_dummy_api_data() -> typing.Callable[[dict], dict]:
+    """Gets dummy city api data"""
+
+    def _get_dummy_api_data(payload: dict | None = None) -> dict:
+        payload = {} if payload is None else payload
+        return {
+            'nom': 'Anglet',
+            'code': '64024',
+            'codesPostaux': ['64600'],
+            'siren': '216400242',
+            'codeEpci': '200067106',
+            'codeDepartement': '64',
+            'codeRegion': '75',
+            'population': 39719,
+            **payload,
+        }
+
+    yield _get_dummy_api_data
