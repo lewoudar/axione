@@ -5,7 +5,7 @@ from pydantic import BaseSettings, FilePath, HttpUrl
 
 
 class Settings(BaseSettings):
-    city_api_url: HttpUrl = 'https://api.gouv.fr/documentation/api-geo/communes'
+    city_api_url: HttpUrl = 'https://geo.api.gouv.fr/communes'
     well_being_city_url: HttpUrl = 'https://www.bien-dans-ma-ville.fr'
     apartment_data_file: FilePath = pathlib.Path(__file__).parent / 'apartment.parquet'
     httpx_follow_redirects: bool = True
