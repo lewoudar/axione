@@ -26,7 +26,7 @@ def test_should_return_422_error_when_payload_is_incorrect(client, bad_input, ke
     assert details[0]['loc'] == ['body', key]
     assert len(caplog.records) == 1
     assert caplog.records[0].levelname == 'ERROR'
-    assert f'bad input sent, detail:' in caplog.records[0].message
+    assert f'validation error, input: {payload}, detail:' in caplog.records[0].message
 
 
 @pytest.mark.parametrize(

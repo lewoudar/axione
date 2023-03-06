@@ -13,9 +13,9 @@ from fastapi.responses import JSONResponse
 from .concurrency import fetch_all_cities_data
 from .config import Settings, get_settings
 from .dependencies import get_httpx_client, get_temporary_file
+from .logger import get_logger
 from .schemas import City, Input
 from .scraper import get_filtered_dataframe
-from .logger import get_logger
 
 app = FastAPI(title='Axione test', version='0.1.0', redoc_url=None, description='Rent price comparator by department')
 settings = get_settings()
@@ -27,7 +27,7 @@ logger = get_logger(__name__)
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    logger.error('bad input sent, detail: %s', exc.errors())
+    logger.error('validation error, input: %s, detail: %s', exc.body, exc.errors())
     return JSONResponse(
         status_code=422,
         content=jsonable_encoder({'detail': exc.errors()}),
@@ -36,10 +36,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.post('/cities', response_model=list[City], responses={'422': {'description': 'Payload incorrect'}})
 async def get_cities_info(
-        input_data: Input,
-        httpx_client: httpx.AsyncClient = Depends(get_httpx_client),
-        temporary_file: Path = Depends(get_temporary_file),
-        settings: Settings = Depends(get_settings),
+    input_data: Input,
+    httpx_client: httpx.AsyncClient = Depends(get_httpx_client),
+    temporary_file: Path = Depends(get_temporary_file),
+    settings: Settings = Depends(get_settings),
 ):
     if input_data.identifier in cache:
         logger.info('returning data in cache for identifier %s', input_data.identifier)

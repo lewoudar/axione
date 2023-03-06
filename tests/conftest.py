@@ -4,7 +4,6 @@ from pathlib import Path
 
 import polars
 import pytest
-from _pytest.logging import LogCaptureFixture
 from fastapi.testclient import TestClient
 from jinja2 import Environment, PackageLoader, select_autoescape
 

@@ -6,8 +6,8 @@ import httpx
 import polars
 from anyio.abc import TaskGroup
 
-from .scraper import fetch_city_api_data, fetch_city_note
 from .logger import get_logger
+from .scraper import fetch_city_api_data, fetch_city_note
 
 logger = get_logger(__name__)
 

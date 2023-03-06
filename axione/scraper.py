@@ -7,17 +7,22 @@ from parsel import Selector
 from unidecode import unidecode
 
 from .config import get_settings
-from .schemas import RawCity
 from .logger import get_logger
+from .schemas import RawCity
 
 logger = get_logger(__name__)
 
 
 def get_filtered_dataframe(
-        filename: pathlib.Path | str, surface: float, maximum_price: float, department: str
+    filename: pathlib.Path | str, surface: float, maximum_price: float, department: str
 ) -> pl.DataFrame:
-    logger.debug('computing filtered dataframe for filename=%s, surface=%s, maximum_price=%s, department=%s', filename,
-                 surface, maximum_price, department)
+    logger.debug(
+        'computing filtered dataframe for filename=%s, surface=%s, maximum_price=%s, department=%s',
+        filename,
+        surface,
+        maximum_price,
+        department,
+    )
     df = pl.scan_parquet(filename)
     return (
         df.with_columns(pl.col('loypredm2').str.replace(',', '.').cast(pl.Float64).alias('rent_per_m2'))
