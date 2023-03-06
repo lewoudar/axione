@@ -4,6 +4,7 @@ import httpx
 import polars as pl
 from fastapi import HTTPException
 from parsel import Selector
+from unidecode import unidecode
 
 from .config import get_settings
 from .schemas import RawCity
@@ -33,9 +34,14 @@ async def fetch_city_api_data(client: httpx.AsyncClient, insee_code: str) -> Raw
     return RawCity(**response.json())
 
 
+def get_url_compatible_city(city: str) -> str:
+    return unidecode(city.lower().replace("'", '-'))
+
+
 async def fetch_city_note(client: httpx.AsyncClient, city: str, insee_code: str) -> float:
     settings = get_settings()
-    response = await client.get(f'{settings.well_being_city_url}/{city.lower()}-{insee_code}/')
+    new_city = get_url_compatible_city(city)
+    response = await client.get(f'{settings.well_being_city_url}/{new_city}-{insee_code}/')
     if response.status_code >= 400:
         raise HTTPException(
             status_code=503, detail=f'Unable to fetch global note for city {city} and zip code {insee_code}'
@@ -43,4 +49,4 @@ async def fetch_city_note(client: httpx.AsyncClient, city: str, insee_code: str)
 
     selector = Selector(response.text)
     str_note = selector.css('h3 + div.total::text').get()
-    return float(str_note)
+    return float(str_note) if str_note else 0

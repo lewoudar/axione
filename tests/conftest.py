@@ -9,6 +9,7 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 from axione.config import Settings, get_settings
 from axione.main import app
+from axione.scraper import get_url_compatible_city
 
 
 @pytest.fixture
@@ -83,6 +84,7 @@ def mock_http_calls(
             payload = get_dummy_api_data({'code': insee_code, 'codesPostaux': [insee_code], 'nom': city})
             respx_mock.get(f'{settings.city_api_url}/{insee_code}') % dict(json=payload)
             html_content = get_page_content(city, get_random_note())
+            city = get_url_compatible_city(city)
             respx_mock.get(f'{settings.well_being_city_url}/{city.lower()}-{insee_code}/') % dict(text=html_content)
 
     yield _mock_http_calls
