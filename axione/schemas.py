@@ -17,6 +17,10 @@ class Input(BaseModel):
     surface: float = Field(..., gt=0.0)
     maximum_price: float = Field(..., gt=0.0)
 
+    @property
+    def identifier(self) -> str:
+        return f'{self.department}-{self.surface}-{self.maximum_price}'
+
 
 class City(BaseModel):
     average_price: float
