@@ -9,24 +9,25 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from loguru import logger
 
 from .concurrency import fetch_all_cities_data
 from .config import Settings, get_settings
 from .dependencies import get_httpx_client, get_temporary_file
 from .schemas import City, Input
 from .scraper import get_filtered_dataframe
+from .logger import get_logger
 
 app = FastAPI(title='Axione test', version='0.1.0', redoc_url=None, description='Rent price comparator by department')
 settings = get_settings()
 # In a production environment, we probably want to use something like redis, but for this quick exercise
 # we will stick with this poor man solution :)
 cache = TTLCache(maxsize=settings.cache_maxsize, ttl=settings.cache_ttl)
+logger = get_logger(__name__)
 
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    logger.error('bad input sent, detail: {}', exc.errors())
+    logger.error('bad input sent, detail: %s', exc.errors())
     return JSONResponse(
         status_code=422,
         content=jsonable_encoder({'detail': exc.errors()}),
@@ -41,14 +42,14 @@ async def get_cities_info(
         settings: Settings = Depends(get_settings),
 ):
     if input_data.identifier in cache:
-        logger.info('returning data in cache for identifier {}', input_data.identifier)
+        logger.info('returning data in cache for identifier %s', input_data.identifier)
         return cache[input_data.identifier]
 
     dataframe = get_filtered_dataframe(
         settings.apartment_data_file, input_data.surface, input_data.maximum_price, input_data.department
     )
     if dataframe.is_empty():
-        logger.info('no data corresponding to the given criteria: {}', input_data.dict())
+        logger.info('no data corresponding to the given criteria: %s', input_data.dict())
         cache[input_data.identifier] = []
         return []
 
@@ -74,6 +75,6 @@ async def get_cities_info(
         dict_cities.append(city.dict())
         cities.append(city)
 
-    logger.info('caching and returning {} items found', len(cities))
+    logger.info('caching and returning %s items found', len(cities))
     cache[input_data.identifier] = dict_cities
     return cities
