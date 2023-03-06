@@ -23,7 +23,7 @@ class TestFetchCityData:
         respx_mock.get(f'{settings.well_being_city_url}/anglet-64024/') % dict(text=html_content)
 
         async with httpx.AsyncClient() as client:
-            await fetch_city_data(client, csv_file, {'INSEE': insee_code})
+            await fetch_city_data(client, csv_file, {'INSEE': insee_code}, anyio.CapacityLimiter(5))
 
         assert csv_file.read_text() == f'note,INSEE,population,zip_code\n3.9,{insee_code},39719,64600\n'
 
