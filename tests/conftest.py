@@ -4,8 +4,10 @@ from pathlib import Path
 
 import polars
 import pytest
+from _pytest.logging import LogCaptureFixture
 from fastapi.testclient import TestClient
 from jinja2 import Environment, PackageLoader, select_autoescape
+from loguru import logger
 
 from axione.config import Settings, get_settings
 from axione.main import app
@@ -88,3 +90,11 @@ def mock_http_calls(
             respx_mock.get(f'{settings.well_being_city_url}/{city.lower()}-{insee_code}/') % dict(text=html_content)
 
     yield _mock_http_calls
+
+
+@pytest.fixture()
+def caplog(caplog) -> LogCaptureFixture:
+    """Fixture to copture loguru messages."""
+    handler_id = logger.add(caplog.handler, format='{message}')
+    yield caplog
+    logger.remove(handler_id)
