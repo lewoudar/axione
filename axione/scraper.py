@@ -45,7 +45,7 @@ async def fetch_city_api_data(client: httpx.AsyncClient, insee_code: str) -> Raw
 
 
 def get_url_compatible_city(city: str) -> str:
-    return unidecode(city.lower().replace("'", '-').replace('le ', '').replace('la ', ''))
+    return unidecode(city.lower().replace("'", '-').replace('le ', '').replace('la ', '').replace('les ', 'les-'))
 
 
 async def fetch_city_note(client: httpx.AsyncClient, city: str, insee_code: str) -> float:
