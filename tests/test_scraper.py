@@ -28,19 +28,17 @@ class TestGetFilteredDataFrame:
 class TestFetchCityApiData:
     """Tests function fetch_city_api_data"""
 
-    async def test_should_raise_503_http_error_when_unable_to_fetch_data(self, respx_mock, settings):
+    async def test_should_return_dummy_data_when_unable_to_fetch_city_data(self, respx_mock, settings):
         insee_code = '64065'
         respx_mock.get(f'{settings.city_api_url}/{insee_code}') % dict(status_code=400, content='nothing for you!')
 
-        with pytest.raises(HTTPException) as exc:
-            async with httpx.AsyncClient() as client:
-                await fetch_city_api_data(client, insee_code)
+        async with httpx.AsyncClient() as client:
+            city = await fetch_city_api_data(client, insee_code)
 
-        assert exc.value.status_code == 503
-        assert exc.value.detail == f'Unable to fetch data for city with insee code {insee_code}'
+        assert city == RawCity(nom='N/A', codesPostaux=['N/A'], code='N/A', codeDepartement='N/A', population=0)
 
     async def test_should_return_city_object_when_data_is_fetched_correctly(
-        self, respx_mock, get_dummy_api_data, settings
+            self, respx_mock, get_dummy_api_data, settings
     ):
         payload = get_dummy_api_data({})
         insee_code = '64024'
@@ -55,14 +53,11 @@ class TestFetchCityApiData:
 class TestFetchCityNote:
     """Tests function fetch_city_note"""
 
-    async def test_should_raise_503_http_error_when_unable_to_get_html_content(self, respx_mock, settings):
+    async def test_should_return_negative_value_when_unable_to_fetch_data(self, respx_mock, settings):
         respx_mock.get(f'{settings.well_being_city_url}/anglet-64024/') % dict(status_code=404, text='No content found')
-        with pytest.raises(HTTPException) as e:
-            async with httpx.AsyncClient() as client:
-                await fetch_city_note(client, 'Anglet', '64024')
-
-        assert e.value.status_code == 503
-        assert e.value.detail == 'Unable to fetch global note for city Anglet and zip code 64024'
+        async with httpx.AsyncClient() as client:
+            note = await fetch_city_note(client, 'Anglet', '64024')
+            assert note == -1
 
     async def test_should_return_global_note_after_fetching_html_page(self, respx_mock, settings, get_page_content):
         html_content = get_page_content('Anglet', 3.9)

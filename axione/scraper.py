@@ -40,8 +40,8 @@ async def fetch_city_api_data(client: httpx.AsyncClient, insee_code: str) -> Raw
     settings = get_settings()
     response = await client.get(f'{settings.city_api_url}/{insee_code}')
     if response.status_code >= 400:
-        logger.error('unable to fetch geo api data, reason: %s', response.text)
-        raise HTTPException(status_code=503, detail=f'Unable to fetch data for city with insee code {insee_code}')
+        logger.info('unable to fetch geo api data, reason: %s', response.text)
+        return RawCity(nom='N/A', codesPostaux=['N/A'], code='N/A', codeDepartement='N/A', population=0)
     return RawCity(**response.json())
 
 
@@ -54,10 +54,8 @@ async def fetch_city_note(client: httpx.AsyncClient, city: str, insee_code: str)
     new_city = get_url_compatible_city(city)
     response = await client.get(f'{settings.well_being_city_url}/{new_city}-{insee_code}/')
     if response.status_code >= 400:
-        logger.error('unable to scrape city note, reason: %s', response.text)
-        raise HTTPException(
-            status_code=503, detail=f'Unable to fetch global note for city {city} and zip code {insee_code}'
-        )
+        logger.info('unable to scrape city note, reason: %s', response.text)
+        return -1
 
     selector = Selector(response.text)
     str_note = selector.css('h3 + div.total::text').get()
