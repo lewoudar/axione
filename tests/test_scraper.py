@@ -1,6 +1,5 @@
 import httpx
 import pytest
-from fastapi.exceptions import HTTPException
 
 from axione.schemas import RawCity
 from axione.scraper import fetch_city_api_data, fetch_city_note, get_filtered_dataframe
@@ -38,7 +37,7 @@ class TestFetchCityApiData:
         assert city == RawCity(nom='N/A', codesPostaux=['N/A'], code='N/A', codeDepartement='N/A', population=0)
 
     async def test_should_return_city_object_when_data_is_fetched_correctly(
-            self, respx_mock, get_dummy_api_data, settings
+        self, respx_mock, get_dummy_api_data, settings
     ):
         payload = get_dummy_api_data({})
         insee_code = '64024'

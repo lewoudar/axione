@@ -34,6 +34,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
+def get_csv_dataframe(file: Path) -> pl.DataFrame:
+    dtypes = {'INSEE': pl.Utf8, 'note': pl.Float64, 'population': pl.Int64, 'zip_code': pl.Utf8}
+    return pl.scan_csv(file, dtypes=dtypes).filter(pl.col('INSEE') != 'N/A').collect()
+
+
 @app.post('/cities', response_model=list[City], responses={'422': {'description': 'Payload incorrect'}})
 async def get_cities_info(
     input_data: Input,
@@ -57,8 +62,7 @@ async def get_cities_info(
         logger.debug('fetching city information')
         await fetch_all_cities_data(tg, dataframe, httpx_client, temporary_file)
 
-    dtypes = {'INSEE': pl.Utf8, 'note': pl.Float64, 'population': pl.Int64, 'zip_code': pl.Utf8}
-    csv_dataframe = pl.read_csv(temporary_file, dtypes=dtypes)
+    csv_dataframe = get_csv_dataframe(temporary_file)
     dataframe = dataframe.join(csv_dataframe, left_on='INSEE', right_on='INSEE').sort(
         ['note', 'LIBGEO'], descending=True
     )

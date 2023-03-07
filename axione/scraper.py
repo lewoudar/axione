@@ -2,7 +2,6 @@ import pathlib
 
 import httpx
 import polars as pl
-from fastapi import HTTPException
 from parsel import Selector
 from unidecode import unidecode
 
